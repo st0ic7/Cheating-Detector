@@ -1,0 +1,71 @@
+/* General Reset and Background */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a0a;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Alert Section Heading */
+#alert-section h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-bottom: 2px solid #00ff00;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+/* Alert Log List */
+#alert-log {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#alert-log li {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: #111;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-left: 4px solid #00ff00;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+  transition: background-color 0.3s;
+}
+
+#alert-log li:hover {
+  background-color: #1a1a1a;
+  cursor: default;
+}
+
+/* Scrollbar Customization for Hacker Vibe */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 4px;
+}
+
+/* Glowing Animation (Optional for Live Logs) */
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 5px #00ff00;
+  }
+  50% {
+    text-shadow: 0 0 15px #00ff00;
+  }
+  100% {
+    text-shadow: 0 0 5px #00ff00;
+  }
+}
+
+.glow-text {
+  animation: glow 1.5s infinite;
+}

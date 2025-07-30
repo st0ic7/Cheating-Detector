@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam Monitoring Dashboard</title>
+</head>
+<body>
+    <h1>EXAM MONITORING</h1>
+    <h2>Live Monitoring Feed</h2>
+    <img src="{% url 'video_feed' %}" width="720" height="480">
+    <a href="{% url 'export_alerts_csv' %}" class="btn btn-primary" style="margin: 15px 0; display: inline-block;">
+    Download Alerts CSV
+</a>
+
+</body>
+</html>

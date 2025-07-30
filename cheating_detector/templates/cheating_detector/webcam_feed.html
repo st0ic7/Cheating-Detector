@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Webcam Feed with Face Detection</title>
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #00ff00;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 800px;
+    }
+
+    h1, h2 {
+      color: #00ff00;
+      text-shadow: 0 0 5px #00ff00;
+      border-bottom: 2px solid #00ff00;
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+    }
+
+    #video-container {
+      border: 2px solid #00ff00;
+      width: 720px;
+      height: 560px;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 15px #00ff00;
+    }
+
+    #alert-section {
+      margin-top: 20px;
+    }
+
+    #alert-log {
+      list-style: none;
+      padding-left: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #0f0f0f;
+      border: 1px solid #00ff00;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+      text-align: left;
+    }
+
+    #alert-log li {
+      padding: 8px 12px;
+      font-weight: bold;
+      border-bottom: 1px solid #003300;
+      background-color: #0a0a0a;
+      color: #00ff00;
+    }
+
+    #alert-log li:nth-child(odd) {
+      background-color: #111;
+    }
+
+    #alert-log li:hover {
+      background-color: #1a1a1a;
+    }
+
+    #startBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: transparent;
+      color: #00ff00;
+      border: 2px solid #00ff00;
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 5px #00ff00;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #startBtn:hover {
+      background-color: #001100;
+      box-shadow: 0 0 10px #00ff00;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #00ff00;
+      border-radius: 3px;
+    }
+
+    .glow-text {
+      animation: glow 1.5s infinite;
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 5px #00ff00; }
+      50% { text-shadow: 0 0 15px #00ff00; }
+      100% { text-shadow: 0 0 5px #00ff00; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="glow-text">Live Webcam with Face Detection</h1>
+
+    <div id="video-container">
+      <img id="webcam" src="{% url 'webcam_feed' %}" width="720" height="560" alt="Webcam Feed"/>
+    </div>
+
+    <div id="alert-section">
+      <h2 class="glow-text">Alerts</h2>
+      <ul id="alert-log"></ul>
+    </div>
+
+    <button id="startBtn">Start Monitoring</button>
+
+    <audio id="beepSound" src="{% static 'cheating_detector/beep.mp3' %}" preload="auto"></audio>
+  </div>
+
+  <script>
+    const beepSound = document.getElementById('beepSound');
+    const startBtn = document.getElementById('startBtn');
+    const alertLog = document.getElementById('alert-log');
+
+    let lastAlert = null;
+    let audioUnlocked = false;
+
+    startBtn.addEventListener('click', () => {
+      beepSound.play().then(() => {
+        beepSound.pause();
+        beepSound.currentTime = 0;
+        audioUnlocked = true;
+        alert('Audio initialized! Beep will play on detection.');
+      }).catch(console.error);
+    });
+
+    function addAlert(message, color = '#00ff00') {
+      const li = document.createElement('li');
+      const timestamp = new Date().toLocaleTimeString();
+      li.textContent = `[${timestamp}] ${message}`;
+      li.style.color = color;
+      alertLog.prepend(li);
+
+      if (alertLog.children.length > 10) {
+        alertLog.removeChild(alertLog.lastChild);
+      }
+    }
+
+    function handleNewAlert(message, color) {
+      if (message !== lastAlert) {
+        addAlert(message, color);
+        lastAlert = message;
+
+        if (audioUnlocked && message.toLowerCase().includes('movement detected')) {
+          beepSound.play().catch(err => console.warn('Beep playback failed:', err));
+        }
+      }
+    }
+
+    setInterval(() => {
+      fetch('/alerts/latest/')
+        .then(response => response.json())
+        .then(data => {
+          handleNewAlert(data.message, data.color || '#00ff00');
+        })
+        .catch(console.error);
+    }, 5000);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Exam Cheating Detector</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+</head>
+<body>
+  <h1>Exam Monitoring</h1>
+  <video id="video" width="720" height="560" autoplay muted></video>
+  <div id="status"></div>
+
+  <script>
+    const video = document.getElementById('video');
+    const statusDiv = document.getElementById('status');
+
+    async function setupCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+    }
+
+    async function loadModels() {
+      await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js/models');
+    }
+
+    async function detect() {
+      const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
+
+      if (detections.length === 0) {
+        statusDiv.innerText = "⚠️ No face detected!";
+        logEvent("No face detected");
+      } else if (detections.length > 1) {
+        statusDiv.innerText = "⚠️ Multiple faces detected!";
+        logEvent("Multiple faces detected");
+      } else {
+        statusDiv.innerText = "✅ Monitoring normally...";
+      }
+    }
+
+    async function logEvent(eventType) {
+      // Send event to backend via AJAX
+      fetch('/log-event/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({ event_type: eventType, details: '' })
+      });
+    }
+
+    // CSRF token helper (for POST requests)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    async function run() {
+      await loadModels();
+      await setupCamera();
+      video.play();
+      setInterval(detect, 3000); // check every 3 seconds
+    }
+
+    run();
+  </script>
+</body>
+</html>
